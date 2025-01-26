@@ -226,6 +226,9 @@ function MetrologyAnalytics() {
   // Referência para o textarea
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Garantir que activeTab seja uma chave válida de services
+  const activeService = services[activeTab as keyof typeof services];
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="bg-slate-900/90 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-50">
@@ -245,7 +248,7 @@ function MetrologyAnalytics() {
                 onClick={() =>
                   document
                     .getElementById(item.toLowerCase())
-                    .scrollIntoView({ behavior: 'smooth' })
+                    ?.scrollIntoView({ behavior: 'smooth' })
                 }
               >
                 {item}
@@ -272,7 +275,7 @@ function MetrologyAnalytics() {
                   onClick={() => {
                     document
                       .getElementById(item.toLowerCase())
-                      .scrollIntoView({ behavior: 'smooth' });
+                      ?.scrollIntoView({ behavior: 'smooth' });
                     set('menuOpen', false);
                   }}
                 >
@@ -311,7 +314,7 @@ function MetrologyAnalytics() {
                 onClick={() =>
                   document
                     .getElementById('solutions')
-                    .scrollIntoView({ behavior: 'smooth' })
+                    ?.scrollIntoView({ behavior: 'smooth' })
                 }
               >
                 <Search className="w-4 h-4 mr-2" /> Explore Platform
@@ -346,21 +349,21 @@ function MetrologyAnalytics() {
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8">{services[activeTab as keyof typeof services].icon}</div>
+                  <div className="w-8 h-8">{activeService.icon}</div>
                   <h3 className="text-2xl font-semibold">
-                    {services[activeTab as keyof typeof services].title}
+                    {activeService.title}
                   </h3>
                 </div>
                 <p className="text-slate-300">
-                  {services[activeTab as keyof typeof services].description}
+                  {activeService.description}
                 </p>
                 <div className="grid gap-4">
-                  {services[activeTab as keyof typeof services].metrics.map((metric, idx) => (
+                  {activeService.metrics.map((metric, idx) => (
                     <UI.Metric key={idx} {...metric} />
                   ))}
                 </div>
                 <ul className="space-y-3">
-                  {services[activeTab as keyof typeof services].features.map((feature, index) => (
+                  {activeService.features.map((feature, index) => (
                     <li key={index} className="flex items-center text-sm">
                       <CheckCircle className="w-4 h-4 mr-3 text-blue-400 shrink-0" />
                       <span>{feature}</span>
