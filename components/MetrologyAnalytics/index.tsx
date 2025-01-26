@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Brain,
   LineChart,
@@ -28,8 +28,22 @@ import {
   Zap,
 } from 'lucide-react';
 
+// Definindo a interface do estado para tipagem segura
+interface State {
+  activeTab: string;
+  showDemo: boolean;
+  isAnalyzing: boolean;
+  menuOpen: boolean;
+  theme: string;
+  chartType: string;
+  demoProgress: number;
+  notifications: any[];
+  userFeedback: string;
+  isFeedbackSubmitted: boolean;
+}
+
 function MetrologyAnalytics() {
-  const [state, setState] = useState({
+  const [state, setState] = useState<State>({
     activeTab: 'analysis',
     showDemo: false,
     isAnalyzing: false,
@@ -54,8 +68,10 @@ function MetrologyAnalytics() {
     isFeedbackSubmitted,
   } = state;
 
+  // Função `set` com tipagem correta
   const set = useCallback(
-    (key, value) => setState((prev) => ({ ...prev, [key]: value })),
+    (key: keyof State, value: any) => 
+      setState((prev) => ({ ...prev, [key]: value })),
     []
   );
 
@@ -127,6 +143,12 @@ function MetrologyAnalytics() {
       children,
       className = '',
       disabled = false,
+    }: {
+      onClick: () => void;
+      variant?: 'primary' | 'secondary' | 'ghost';
+      children: React.ReactNode;
+      className?: string;
+      disabled?: boolean;
     }) => (
       <button
         onClick={onClick}
@@ -143,14 +165,14 @@ function MetrologyAnalytics() {
         {children}
       </button>
     ),
-    Card: ({ children, className = '' }) => (
+    Card: ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
       <div
         className={`bg-slate-900 p-6 rounded-xl border border-slate-800 ${className}`}
       >
         {children}
       </div>
     ),
-    Metric: ({ label, value, trend }) => (
+    Metric: ({ label, value, trend }: { label: string; value: string; trend?: string }) => (
       <div className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
         <span className="text-sm text-slate-300">{label}</span>
         <div className="flex items-center gap-2">
@@ -167,7 +189,7 @@ function MetrologyAnalytics() {
         </div>
       </div>
     ),
-    Badge: ({ children }) => (
+    Badge: ({ children }: { children: React.ReactNode }) => (
       <span className="px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-400">
         {children}
       </span>
@@ -200,6 +222,9 @@ function MetrologyAnalytics() {
       document.body.style.overflow = 'auto';
     }
   }, [showDemo]);
+
+  // Referência para o textarea
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -313,29 +338,29 @@ function MetrologyAnalytics() {
                   variant={activeTab === key ? 'primary' : 'secondary'}
                   onClick={() => set('activeTab', key)}
                 >
-                  {services[key].icon}
-                  <span className="ml-2">{services[key].title}</span>
+                  {services[key as keyof typeof services].icon}
+                  <span className="ml-2">{services[key as keyof typeof services].title}</span>
                 </UI.Button>
               ))}
             </div>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8">{services[activeTab].icon}</div>
+                  <div className="w-8 h-8">{services[activeTab as keyof typeof services].icon}</div>
                   <h3 className="text-2xl font-semibold">
-                    {services[activeTab].title}
+                    {services[activeTab as keyof typeof services].title}
                   </h3>
                 </div>
                 <p className="text-slate-300">
-                  {services[activeTab].description}
+                  {services[activeTab as keyof typeof services].description}
                 </p>
                 <div className="grid gap-4">
-                  {services[activeTab].metrics.map((metric, idx) => (
+                  {services[activeTab as keyof typeof services].metrics.map((metric, idx) => (
                     <UI.Metric key={idx} {...metric} />
                   ))}
                 </div>
                 <ul className="space-y-3">
-                  {services[activeTab].features.map((feature, index) => (
+                  {services[activeTab as keyof typeof services].features.map((feature, index) => (
                     <li key={index} className="flex items-center text-sm">
                       <CheckCircle className="w-4 h-4 mr-3 text-blue-400 shrink-0" />
                       <span>{feature}</span>
@@ -425,8 +450,9 @@ function MetrologyAnalytics() {
               We value your feedback. Let us know how we can improve.
             </p>
             <textarea
+              ref={textareaRef} // Referência para o textarea
               className="w-full p-4 bg-slate-800 rounded-lg text-slate-100 mb-4"
-              rows="4"
+              rows={4} // Valor padrão para rows
               placeholder="Your feedback..."
               value={userFeedback}
               onChange={(e) => set('userFeedback', e.target.value)}
